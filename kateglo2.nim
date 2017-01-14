@@ -47,9 +47,11 @@ import os,cx,httpclient,json,strfmt,strutils,sets,rdstdin
 ##
 ##
 ##   Requires    : cx.nim
+##                 get it like so:
+##                 nimble install random
+##                 nimble install https://github.com/qqtop/NimCx.git
 ##
-##
-##   Project     : https://github.com/qqtop/Nim-Snippets
+##   Project     : https://github.com/qqtop/Kateglo
 ##
 ##
 ##   Tested      : on linux only 2017-01-14
