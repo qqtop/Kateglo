@@ -44,8 +44,6 @@ import cx, pythonize
 #
 # now using cx.nim to handle most color printing tasks
 #
-# todo : issue with converting hiragana from python back to nimstring . currently using python to print
-# 
 # 
 # 
 # A rough receipe for installing mecab 0.996 from  https://github.com/taku910/mecab
@@ -99,7 +97,7 @@ import cx, pythonize
 
 let i7file = "/dev/shm/indo7q.txt"    # change path as required keep filename
 
-var VERSION = "1.6.6"
+var VERSION = "1.6.7"
 setControlCHook(handler)
 
 var recBuff = newSeq[seq[string]]()
@@ -214,16 +212,12 @@ proc doMecab(b:string) =
         execPython("kata  = mecab.parse(text)")
         nimkata = pythonEnvironment["kata"].depythonify(string)
         execPython("hira = jaconv.kata2hira(kata.decode('utf-8'))")
-        execPython("print '        ',hira")   # use python to print
-        # for some reason the conversion back to nim not working here for hiragana string
-        #try:
-        #  nimhira = pythonEnvironment["hira"].depythonify(string)
-        #except:
-        #  nimhira = "hiragana not converted"
-
+        execPython("hira = hira.encode('utf-8')")
+        nimhira = pythonEnvironment["hira"].depythonify(string)
+     
 # set up for japanese
 execPython("# coding: utf-8")
-execPython("import MeCab , jaconv")          # new jaconv pip2 installed
+execPython("import MeCab , jaconv")          # new jaconv pip2 installed ,prev. used : jcconv
 #execPython("from jcconv import kata2hira")  # old
 
 while fin == false:
