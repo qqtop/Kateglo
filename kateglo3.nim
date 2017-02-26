@@ -330,7 +330,7 @@ disp.register(monitor,proc (m: FSMonitor, ev: MonitorEvent) =
                             hline(tw,green)  
                             tc += 1
                           except:
-                            println("JsonNode empty no data received",red)
+                            printLn("JsonNode empty no data received",red)
                           finally:
                             discard
                       

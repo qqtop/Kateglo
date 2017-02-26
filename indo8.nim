@@ -15,7 +15,7 @@ import cx, pythonize
 #          
 #          switches ending with p play voice from google
 #  
-# Tested:  nim 0.16.0
+# Tested:  nim 0.16.1
 # 
 # Requires :
 # 
@@ -44,7 +44,7 @@ import cx, pythonize
 #
 # now using cx.nim to handle most color printing tasks
 #
-#
+# todo : issue with converting hiragana from python back to nimstring . currently using python to print
 # 
 # 
 # 
@@ -99,7 +99,7 @@ import cx, pythonize
 
 let i7file = "/dev/shm/indo7q.txt"    # change path as required keep filename
 
-var VERSION = "1.6.5"
+var VERSION = "1.6.6"
 setControlCHook(handler)
 
 var recBuff = newSeq[seq[string]]()
@@ -139,23 +139,23 @@ proc showHist(n:int = idd) =
    if id < n:
      for x in 1.. id:      
        var rx = getidrec(x)
-       println("{:>4} {:<4} {} ".fmt(yellowgreen & rx[0],termwhite & rx[1],cadetblue & rx[2])) 
-       println("{:>4} {:<4} {} ".fmt(yellowgreen & rx[0],termwhite & rx[1],termwhite & rx[3])) 
+       printLn("{:>4} {:<4} {} ".fmt(yellowgreen & rx[0],termwhite & rx[1],cadetblue & rx[2])) 
+       printLn("{:>4} {:<4} {} ".fmt(yellowgreen & rx[0],termwhite & rx[1],termwhite & rx[3])) 
     
    else :
         for x in (id - n + 1).. id: 
             var rx = getidrec(x)
-            println("{:>4} {:<4} {} ".fmt(yellowgreen & rx[0],white & rx[1],cadetblue & rx[2])) 
-            println("{:>4} {:<4} {} ".fmt(yellowgreen & rx[0],white & rx[1],termwhite  & rx[3])) 
+            printLn("{:>4} {:<4} {} ".fmt(yellowgreen & rx[0],white & rx[1],cadetblue & rx[2])) 
+            printLn("{:>4} {:<4} {} ".fmt(yellowgreen & rx[0],white & rx[1],termwhite  & rx[3])) 
             
-   dlineln(tw - 1,"-",pastelgreen)
+   dlineln(tw - 10,"-",pastelgreen)
      
 # some procs currently unused , but maybe handy in future   
    
 proc showHistSingle(n:int) =
        var rx = getidrec(n)
        var xpos = tw - 10 - rx[0].len - rx[1].len - rx[2].len
-       println("{:>4} {:<4} {:<50} {}".fmt(yellowgreen & rx[0],termwhite & rx[1],truetomato & rx[2], termwhite & rx[3]),xpos = xpos)
+       printLn("{:>4} {:<4} {:<50} {}".fmt(yellowgreen & rx[0],termwhite & rx[1],truetomato & rx[2], termwhite & rx[3]),xpos = xpos)
     
   
 proc getidswitch(idx:string|int):string =
@@ -203,23 +203,28 @@ proc showTop()=
         clearup()
         print("{:<9}".fmt("Active : "), moccasin)
         print("{:<4}".fmt(switch),cyan)
-        printBicol("{}".fmt("Switches: d,dr,p,e,ep,er,v,ev,ej,ejp,dj,djp,jd,jdp,a,av,ac,acp,p,k,z,cb,h=help,q=quit"),":")
+        printBiCol("{}".fmt("Switches: d,dr,p,e,ep,er,v,ev,ej,ejp,dj,djp,jd,jdp,a,av,ac,acp,p,k,z,cb,h=help,q=quit"),":")
         echo()
         print("_________^",red)
-        hlineln(tw - 10,pastelgreen)  
+        hlineln(tw - 10,pastelblue)  
 
 proc doMecab(b:string) =
         pythonEnvironment["text"] = b
         execPython("mecab = MeCab.Tagger('-Oyomi')")
         execPython("kata  = mecab.parse(text)")
         nimkata = pythonEnvironment["kata"].depythonify(string)
-        execPython("hira = jaconv.kata2hira(kata.encode('utf-8').strip())")
-        nimhira = pythonEnvironment["hira"].depythonify(string)
+        execPython("hira = jaconv.kata2hira(kata.decode('utf-8'))")
+        execPython("print '        ',hira")   # use python to print
+        # for some reason the conversion back to nim not working here for hiragana string
+        #try:
+        #  nimhira = pythonEnvironment["hira"].depythonify(string)
+        #except:
+        #  nimhira = "hiragana not converted"
 
 # set up for japanese
 execPython("# coding: utf-8")
-execPython("import MeCab , jaconv")   # new jaconv  pip2 installed
-#execPython("from jcconv import kata2hira")
+execPython("import MeCab , jaconv")          # new jaconv pip2 installed
+#execPython("from jcconv import kata2hira")  # old
 
 while fin == false:
         showtop()
@@ -246,7 +251,7 @@ while fin == false:
                         var cpc = checkclip()
                         acmd = "trans -b -w $1 -s id -t en "  % $tw & quoteshellposix(cpc)
                         print("ClipB  : ", greenyellow)
-                        println(cpc,powderblue,xpos = 9)
+                        printLn(cpc,powderblue,xpos = 9)
                      else:
                         acmd = "trans -b -w $1 -s id -t en "  % $tw & quoteshellposix(katax)
                         dokatax(katax)
@@ -416,32 +421,32 @@ while fin == false:
                 
         if switch == "h":
              echo()
-             printlnbicol("indo8:   Switches Information",":",salmon,greenyellow)
-             hlineln(60,"_")
+             printLnBiCol("indo8:   Switches Information",":",salmon,greenyellow)
+             hlineln(tw - 10,"_")
              echo()
-             printlnbicol("d    :   indonesian english")
-             printlnbicol("dr   :   translate last sentence to english")
-             printlnbicol("dj   :   indo japanese,english")
-             printlnbicol("djp  :   indo japanese,english,japanese voice")
-             printlnbicol("v    :   indonesian english verbose")
-             printlnbicol("p    :   any language english with voice for both, verbose")
-             printlnbicol("e    :   english indonesian")
-             printlnbicol("ep   :   english indonesian voice")
-             printlnbicol("er   :   translate last sentence to indonesian")
-             printlnbicol("ev   :   english indonesian verbose")
-             printlnbicol("ej   :   english japanese")
-             printlnbicol("ejp  :   english japanese voice")
-             printlnbicol("jd   :   indonesian english ")
-             printlnbicol("jdp  :   indonesian english japanese voice")           
-             printlnbicol("a    :   any language to english")
-             printlnbicol("av   :   any language to english verbose")
-             printlnbicol("ac   :   any language to chinese")
-             printlnbicol("acp  :   any language to chinese voice")
-             printlnbicol("k    :   Dictionary Mode")
-             printlnbicol("cb   :   AutoclipBoard Mode")     
-             printlnbicol("h    :   help")
-             printlnbicol("q    :   Quit")
-             hlineln(60,"_")
+             printLnBiCol("d    :   indonesian english")
+             printLnBiCol("dr   :   translate last sentence to english")
+             printLnBiCol("dj   :   indo japanese,english")
+             printLnBiCol("djp  :   indo japanese,english,japanese voice")
+             printLnBiCol("v    :   indonesian english verbose")
+             printLnBiCol("p    :   any language english with voice for both, verbose")
+             printLnBiCol("e    :   english indonesian")
+             printLnBiCol("ep   :   english indonesian voice")
+             printLnBiCol("er   :   translate last sentence to indonesian")
+             printLnBiCol("ev   :   english indonesian verbose")
+             printLnBiCol("ej   :   english japanese")
+             printLnBiCol("ejp  :   english japanese voice")
+             printLnBiCol("jd   :   indonesian english ")
+             printLnBiCol("jdp  :   indonesian english japanese voice")           
+             printLnBiCol("a    :   any language to english")
+             printLnBiCol("av   :   any language to english verbose")
+             printLnBiCol("ac   :   any language to chinese")
+             printLnBiCol("acp  :   any language to chinese voice")
+             printLnBiCol("k    :   Dictionary Mode")
+             printLnBiCol("cb   :   AutoclipBoard Mode")     
+             printLnBiCol("h    :   help")
+             printLnBiCol("q    :   Quit")
+             hlineln(tw - 10,"_")
              echo()
         else: 
           if bflag == true and hflag==false:
@@ -459,38 +464,38 @@ while fin == false:
                     if switch == "ej" or switch == "ejp" or switch == "dj" or switch == "djp":
                         echo()
                         doMecab(rx)
-                        println(nimhira,pastelgreen,xpos = 10)
+                        printLn(nimhira,pastelgreen,xpos = 10)
                     
                 else:
                         printLn(mediumspringgreen & "Trans" & dodgerblue & "  : " & termwhite)
                         for rxline in rxl:
                             # also tried with wordwrap function here but japanese is not cut off correctly
                             if rxl.len == 2:
-                                println(rxline,yellowgreen,xpos = 10)
+                                printLn(rxline,yellowgreen,xpos = 10)
                             else:
                                 # in case of many lines we provide a bit more space
-                                println(rxline,yellowgreen,xpos = 2)
+                                printLn(rxline,yellowgreen,xpos = 2)
                             if switch == "ej" or switch == "ejp" or switch == "dj" or switch == "djp" :
                                 if rxl.len == 2:
                                       doMecab(rxline)
-                                      println(nimhira,pastelgreen,xpos = 10)
+                                      printLn(nimhira,pastelgreen,xpos = 10)
                                 else:      
                                       doMecab(rxline)
-                                      println(nimhira,pastelgreen,xpos = 2) 
+                                      printLn(nimhira,pastelgreen,xpos = 2) 
                             
                             # Note that we get double lines back as there is no way
                             # to know when a new language translation starts
                             if switch == "jd" or switch == "jdp":
                                 if rxl.len == 2:
                                       doMecab(rxline)
-                                      println(nimhira,pastelgreen,xpos = 10)
+                                      printLn(nimhira,pastelgreen,xpos = 10)
                                 else:  
                                       doMecab(rxline)
-                                      println(truetomato & rightarrow & pastelblue & nimhira & white,pastelblue,xpos = 1)
+                                      printLn(truetomato & rightarrow & pastelblue & nimhira & white,pastelblue,xpos = 1)
                               
                          
           else:
-                println(acmd,truetomato) 
+                printLn(acmd,truetomato) 
                           
         if switch in okswitch:
            # only allow good switches 
