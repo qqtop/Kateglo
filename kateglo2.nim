@@ -16,7 +16,7 @@ import os,nimcx,rdstdin
 ##
 ##   ProjectStart: 2015-09-06
 ##
-##   Compiler    : Nim 0.16.0  https://github.com/nim-lang/Nim
+##   Compiler    : Nim 0.17.3
 ##
 ##   Description : Indonesian - Indonesian  Dictionary
 ##
@@ -46,7 +46,7 @@ import os,nimcx,rdstdin
 ##                 shows when numbering has holes .
 ##
 ##
-##   Requires    : nimble install nimcx random
+##   Requires    : nimble install nimcx 
 ##                
 ##
 ##   Project     : https://github.com/qqtop/Kateglo
