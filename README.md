@@ -11,7 +11,7 @@ Access  Kateglo  Indonesian Language Dictionary API with Nim
 |                |                                           |
 
 
-```nim
+```nimrod 
  
 #############################################################################
 # OUTPUT EXAMPLE OF THIS PROGRAM  (ACTUAL OUTPUT IS COLORIZED)              #
@@ -95,6 +95,9 @@ Access  Kateglo  Indonesian Language Dictionary API with Nim
 #
 #
 ```
+
+Crashes occasionaly occure due to serverside issues.
+
 
 
 
