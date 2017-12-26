@@ -1,4 +1,4 @@
-import os,cx,httpclient,json,strfmt,strutils,sets,rdstdin
+import os,nimcx,rdstdin
 
 ##
 ##   Program     : kateglo2.nim
@@ -12,7 +12,7 @@ import os,cx,httpclient,json,strfmt,strutils,sets,rdstdin
 ##                 http://creativecommons.org/licenses/by-nc-sa/3.0/
 ##                 for other than personal use visit kateglo.com
 ##
-##   Version     : 0.7.0
+##   Version     : 0.9.0
 ##
 ##   ProjectStart: 2015-09-06
 ##
@@ -31,7 +31,7 @@ import os,cx,httpclient,json,strfmt,strutils,sets,rdstdin
 ##
 ##
 ##
-##                 to stop this program : Ctrl-C   or enter word : quit
+##                 to stop this program : Ctrl-C or enter word : quit
 ##
 ##
 ##
@@ -46,15 +46,13 @@ import os,cx,httpclient,json,strfmt,strutils,sets,rdstdin
 ##                 shows when numbering has holes .
 ##
 ##
-##   Requires    : cx.nim
-##                 get it like so:
-##                 nimble install random
-##                 nimble install https://github.com/qqtop/NimCx.git
+##   Requires    : nimble install nimcx random
+##                
 ##
 ##   Project     : https://github.com/qqtop/Kateglo
 ##
 ##
-##   Tested      : on linux only 2017-01-14
+##   Tested      : on linux only 2017-12-26
 ##
 ##
 ##   Programming : qqTop
@@ -69,16 +67,16 @@ proc getData(theWord:string):JsonNode =
     try:
        r = parseJson(zcli.getContent("http://kateglo.com/api.php?format=json&phrase=" & theWord))
     except JsonParsingError:
-       msgr() do : echo "Word " & theWord & "  not defined in kateglo."
-       msgr() do : echo "Maybe misspelled or not a root word."
-       msgr() do : echo "Lema yang dicari tidak ditemukan !"
+       printLn("Word " & theWord & "  not defined in kateglo.",red)
+       printLn("Maybe misspelled or not a root word.",red)
+       printLn("Lema yang dicari tidak ditemukan !",red)
        r = nil
        wflag = true
     result = r
 
 proc getData2(theWord:string):JsonNode =
     var r:JsonNode
-    var zcli = newHttpClient(timeout = 1000)
+    var zcli = newHttpClient(timeout = 2000)
     try:
        r = parseJson(zcli.getContent("http://kateglo.com/api.php?format=json&phrase=" & theWord))
 
@@ -102,8 +100,7 @@ while true:
       wflag = false
       wflag2 = false
       aword = ""
-      var tw = getTerminalWidth()
-      msgc() do: echo "..."
+      printLn("...",cyan)
       echo()
       aword = readLineFromStdin("Kata : ")
       if aword == "quit":
@@ -116,7 +113,7 @@ while true:
 
             echo()
             superHeader("Kateglo Indonesian - Indonesian Dictionary")
-            printLnBiCol("Dicari Kata    : " & aword,sep,brightcyan,rosybrown)
+            printLnBiCol("Dicari Kata    : " & aword,brightcyan,rosybrown,sep,0,false,{})
             echo()
             proc ss(jn:JsonNode):string =
                 # strip " from the string
@@ -131,22 +128,22 @@ while true:
                   echo()
                   for zd in data["kateglo"]["definition"]:
                       c += 1
-                      printLnBiCol("{:>7}{} {}".fmt(c,sep,ss(zd["phrase"])),":",brightcyan,rosybrown)
+                      printLnBiCol(fmtx([">7","",""],c,sep,ss(zd["phrase"])),brightcyan,rosybrown,":",0,false,{})
                       if $ss(zd["def_text"]) == "null":
-                          printLnBiCol("{:>7}{} {}".fmt("Def",sep,"Nothing Found"),":",lightcoral,red)
+                          printLnBiCol(fmtx([">7","",""],"Def",sep,"Nothing Found"),lightcoral,red,":",0,false,{})
 
                       elif ss(zd["def_text"]).len > tw:
                             # for nicer display we need to splitlines
                             var oks = splitlines(wordwrap(ss(zd["def_text"]),tw-20))
                             #print the first line
-                            printLnBiCol("{:>7}{} {}".fmt("Def",sep,oks[0]),":",lightcoral,termwhite)
+                            printLnBiCol(fmtx([">7","",""],"Def",sep,oks[0]),lightcoral,termwhite,":",0,false,{})
                             for x in 1.. <oks.len   :
                                 # here we pad 10 blaks on left
                                 oks[x] = align(oks[x],10 + oks[x].len)
-                                printLn("{}".fmt(oks[x]),termwhite)
+                                printLn(oks[x],termwhite)
 
                       else:
-                            printLnBiCol("{:>7}{} {}".fmt("Def",sep,ss(zd["def_text"])),":",lightcoral,termwhite)
+                            printLnBiCol(fmtx([">7","",""],"Def",sep,ss(zd["def_text"])),lightcoral,termwhite,":",0,false,{})
 
                       if ss(zd["sample"]) != "null":
                           # put the phrase into the place holders -- or ~ returned from kateglo
@@ -154,11 +151,11 @@ while true:
                           oksa = replace(oksa,"~",ss(zd["phrase"]))
                           var okxs = splitlines(wordwrap(oksa,tw-20))
                           #print the first line
-                          printLnBiCol("{:>7}{} {}".fmt("Sample",sep,okxs[0]),sep,lightcoral,termwhite)
+                          printLnBiCol(fmtx([">7","",""],"Sample",sep,okxs[0]),lightcoral,termwhite,sep,0,false,{})
                           for x in 1.. <okxs.len   :
                             # here pad 10 blanks on left
                             okxs[x] = align(okxs[x],10 + okxs[x].len)
-                            printLn("{}".fmt(okxs[x]),termwhite)
+                            printLn(okxs[x],termwhite)
                       hline(tw,black)
 
 
@@ -171,8 +168,8 @@ while true:
                           if maxsta > 20: maxsta = 20  # limit data rows to abt 20
                           printLn("Related Phrases",yellowgreen)
                           echo()
-                          var mm = "{:>5} {:<14} {}".fmt("No.","Type","Phrase")
-                          print(mm,mm,yellow,styled = {styleUnderscore})
+                          var mm = fmtx([">5","<14",""],"No.","Type","Phrase")
+                          #print(mm,mm,bgYellow,xpos = 3,styled = {styleUnderscore,styleReverse})
                           decho(2)
                           for zd in 0.. <maxsta:
                             try:
@@ -189,15 +186,15 @@ while true:
                                     var phdx = phrdata["kateglo"]["translations"]
                                     if phdx.len > 0:
                                         trsin =  ss(phdx[0]["translation"])
-                                        printLnBiCol("{:>4}{} {:<14}: {}".fmt($(zd+1),":",ss(dx[zd]["rel_type_name"]),ss(dx[zd]["related_phrase"])),sep,lightcoral,termwhite)
+                                        printLnBiCol(fmtx([">4","","<14",""],$(zd+1),":",ss(dx[zd]["rel_type_name"]),ss(dx[zd]["related_phrase"])),lightcoral,termwhite,sep,":",0,false,{})
                                         var okxs = splitlines(wordwrap(trsin,tw - 40))
                                         # print trans first line
-                                        printLnBiCol("{:>20}{} {}".fmt("Trans",":",okxs[0]),sep,powderblue,termwhite)
+                                        printLnBiCol(fmtx([">20","",""],"Trans",":",okxs[0]),sep,powderblue,termwhite,sep,":",0,false,{})
                                         if okxs.len > 1:
                                             for x in 1.. <okxs.len :
                                                 # here pad 22 blanks on left
                                                 okxs[x] = align(okxs[x],22 + okxs[x].len)
-                                                printLn("{}".fmt(okxs[x]),termwhite)
+                                                printLn(okxs[x],termwhite)
 
 
 
@@ -210,7 +207,7 @@ while true:
                                 sleepy(0.5)
 
                               else:
-                                printLnBiCol("{:>4}{} {:<14}: {}".fmt($zd,":",rtyp,rphr),sep,lightcoral,termwhite)
+                                printLnBiCol(fmtx([">4","","<14",""],$zd,":",rtyp,rphr),lightcoral,termwhite,sep,0,false,{})
 
                             except:
                                    discard
@@ -225,7 +222,7 @@ while true:
                   printLn("Translation",yellowgreen)
                   echo()
                   for zd in 0.. <dx.len:
-                      printLnBiCol("{:>8}{} {}".fmt(ss(dx[zd]["ref_source"]),":",ss(dx[zd]["translation"])),sep,lightcoral,termwhite)
+                      printLnBiCol(fmtx([">8","",""],ss(dx[zd]["ref_source"]),":",ss(dx[zd]["translation"])),lightcoral,termwhite,sep,0,false,{})
                   hline(tw,green)
 
 
@@ -238,8 +235,8 @@ while true:
                           printLn("Proverbs",yellowgreen)
                           echo()
                           for zd in 0.. <dx.len:
-                              printLnBiCol("{:>4} Prov {} {}".fmt($(zd+1),":",ss(dx[zd]["proverb"])),sep,lightcoral,termwhite)
-                              printLnBiCol("{:>4} Mean {} {}".fmt($(zd+1),":",ss(dx[zd]["meaning"])),sep,lightcoral,termwhite)
+                              printLnBiCol(fmtx([">4", "",""],$(zd+1),":","Prov " & ss(dx[zd]["proverb"])),lightcoral,termwhite,sep,0,false,{})
+                              printLnBiCol(fmtx([">4", "",""],$(zd+1),":","Mean " & ss(dx[zd]["meaning"])),lightcoral,termwhite,sep,0,false,{})
                               hline(tw,black)
 
 
