@@ -1,6 +1,6 @@
 {.deadCodeElim: on, optimization: size.}
-#import nimcx
-import "/data5/NimStuff/NimCxDevel/cx.nim"
+import nimcx
+
 ##
 ##   Program     : kateglo.nim
 ##
