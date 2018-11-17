@@ -1,6 +1,6 @@
 {.deadCodeElim: on, optimization: size.}
-import os,nimcx,rdstdin
-
+#import nimcx
+import "/data5/NimStuff/NimCxDevel/cx.nim"
 ##
 ##   Program     : kateglo.nim
 ##
@@ -13,11 +13,13 @@ import os,nimcx,rdstdin
 ##                 http://creativecommons.org/licenses/by-nc-sa/3.0/
 ##                 for other than personal use visit kateglo.com
 ##
-##   Version     : 1.0.0
+##   Version     : 1.1.0
 ##
 ##   ProjectStart: 2015-09-06
+##   
+##   Latest      : 2018-11-17
 ##
-##   Compiler    : Nim 0.17.3
+##   Compiler    : Nim 0.19.x
 ##
 ##   Description : Indonesian - Indonesian  Dictionary Lookup  at kateglo.com via public API
 ##
@@ -51,19 +53,16 @@ import os,nimcx,rdstdin
 ##   Project     : https://github.com/qqtop/Kateglo
 ##
 ##
-##   Tested      : on linux only 2017-12-27
-##
-##
 ##   Programming : qqTop
 ##
 
 var wflag :bool = false
 var wflag2:bool = false
-const KATEGLOVERSION = "1.0.0"
+const KATEGLOVERSION = "1.1.0"
 
 proc getData(theWord:string):JsonNode =
     var r:JsonNode
-    var zcli = newHttpClient(timeout = 2000)
+    var zcli = newHttpClient(timeout = 5000)
     try:
        r = parseJson(zcli.getContent("http://kateglo.com/api.php?format=json&phrase=" & theWord))
     except JsonParsingError:
@@ -76,7 +75,7 @@ proc getData(theWord:string):JsonNode =
 
 proc getData2(theWord:string):JsonNode =
     var r:JsonNode
-    var zcli = newHttpClient(timeout = 2000)
+    var zcli = newHttpClient(timeout = 5000)
     try:
        r = parseJson(zcli.getContent("http://kateglo.com/api.php?format=json&phrase=" & theWord))
     except JsonParsingError:
@@ -90,7 +89,7 @@ proc getData2(theWord:string):JsonNode =
     result = r
   
 var aword = ""
-infoLine()
+#infoLine()
 echo()
 while true:
       wflag  = false
@@ -99,8 +98,7 @@ while true:
       printLn("...",cyan)
       echo()
       aword = readLineFromStdin("Kata : ")
-      if aword == "quit":
-         doFinish()
+      if aword == "quit":  doFinish()
 
       let data = getData(aword)
       let sep = ": "
