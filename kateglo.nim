@@ -1,5 +1,4 @@
-{.deadCodeElim: on, optimization: size.}
-import nimcx
+import nimcx,unicode
 
 ##
 ##   Program     : kateglo.nim
@@ -13,20 +12,20 @@ import nimcx
 ##                 http://creativecommons.org/licenses/by-nc-sa/3.0/
 ##                 for other than personal use visit kateglo.com
 ##
-##   Version     : 1.1.0
+##   Version     : 1.2.0
 ##
 ##   ProjectStart: 2015-09-06
 ##   
-##   Latest      : 2018-11-17
+##   Latest      : 2020-03-21 
 ##
-##   Compiler    : Nim 0.19.x
+##   Compiler    : Nim 1.0.6 
 ##
 ##   Description : Indonesian - Indonesian  Dictionary Lookup  at kateglo.com via public API
 ##
 ##                 with english translation
 ##
 ##
-##                 compile:  nim c -r kateglo
+##                 compile:  nim c -d:release -r kateglo
 ##
 ##                 run    :  kateglo
 ##
@@ -42,10 +41,6 @@ import nimcx
 ##                 data which maybe skipped by our parsing efforts which
 ##
 ##                 shows when numbering has holes .
-##                 
-##                 
-##                 compile with -d:release is not recommended as program may crash on certain phrases
-##
 ##
 ##   Requires    : nimble install nimcx 
 ##                
@@ -58,7 +53,7 @@ import nimcx
 
 var wflag :bool = false
 var wflag2:bool = false
-const KATEGLOVERSION = "1.1.0"
+const KATEGLOVERSION = "1.2.0"
 
 proc getData(theWord:string):JsonNode =
     var r:JsonNode
@@ -130,12 +125,12 @@ while true:
 
                       elif ss(zd["def_text"]).len > tw:
                             # for nicer display we need to splitlines
-                            var oks = splitlines(wordwrap(ss(zd["def_text"]),tw - 20))
+                            var oks = splitlines(wrapWords(ss(zd["def_text"]),tw - 20))
                             #print the first line
                             printLnBiCol(fmtx([">7","",""],"Def",sep,oks[0]),lightcoral,termwhite,":",0,false,{})
                             for x in 1..<oks.len   :
                                 # here we pad 10 spaces on left
-                                oks[x] = align(oks[x],10 + oks[x].len)
+                                oks[x] = unicode.align(oks[x],10 + oks[x].len)
                                 printLn(oks[x],termwhite)
 
                       else:
@@ -145,12 +140,12 @@ while true:
                           # put the phrase into the place holders -- or ~ returned from kateglo
                           var oksa = replace(ss(zd["sample"]),"--",ss(zd["phrase"]))
                           oksa = replace(oksa,"~",ss(zd["phrase"]))
-                          var okxs = splitlines(wordwrap(oksa,tw-20))
+                          var okxs = splitlines(wrapWords(oksa,tw-20))
                           #print the first line
                           printLnBiCol(fmtx([">7","",""],"Sample",sep,okxs[0]),lightcoral,termwhite,sep,0,false,{})
                           for x in 1..<okxs.len   :
                             # here pad 10 spaces on left
-                            okxs[x] = align(okxs[x],10 + okxs[x].len)
+                            okxs[x] = unicode.align(okxs[x],10 + okxs[x].len)
                             printLn(okxs[x],termwhite)
                       hline(tw,black)
 
@@ -182,13 +177,13 @@ while true:
                                     if phdx.len > 0:
                                         trsin =  ss(phdx[0]["translation"])
                                         printLnBiCol(fmtx([">4","","<14",""],$(zd + 1),": ",ss(dx[zd]["rel_type_name"]),ss(dx[zd]["related_phrase"])),lightcoral,pastelyellow,ss(dx[zd]["rel_type_name"]),0,false,{})
-                                        var okxs = splitlines(wordwrap(trsin,tw - 40))
+                                        var okxs = splitlines(wrapWords(trsin,tw - 40))
                                         # print trans first line
                                         printLnBiCol(fmtx([">20","",""],"Trans", spaces(1) & rightarrow & spaces(1),okxs[0]),powderblue,termwhite,rightarrow,0,false,{})
                                         if okxs.len > 1:
                                             for x in 1..<okxs.len :
                                                 # here pad 22 blanks on left
-                                                okxs[x] = align(okxs[x],22 + okxs[x].len)
+                                                okxs[x] = unicode.align(okxs[x],22 + okxs[x].len)
                                                 printLn(okxs[x],termwhite)
 
                                 # need a sleep here or we hit the kateglo server too hard
@@ -213,11 +208,11 @@ while true:
                   printLn(" Translation",yellowgreen)
                   echo()
                   for zd in 0..<dx.len:
-                      var oks = splitlines(wordwrap(ss(dx[zd]["translation"])))
+                      var oks = splitlines(wrapWords(ss(dx[zd]["translation"])))
                       printLnBiCol(fmtx([">8","",""],ss(dx[zd]["ref_source"])," : ",oks[0]),aquamarine,termwhite,sep,0,false,{})
                       for x in 1..<oks.len   :
                                 # here we pad 10 spaces on left
-                                oks[x] = align(oks[x],11 + oks[x].len)
+                                oks[x] = unicode.align(oks[x],11 + oks[x].len)
                                 printLn(oks[x],termwhite)
                       echo()
                       
@@ -250,15 +245,6 @@ while true:
 
 
 doFinish()
-
-
-
-#############################################################################
-# OUTPUT EXAMPLE OF THIS PROGRAM  (ACTUAL OUTPUT IS COLORIZED)              #
-#############################################################################
-
-
-
 
 ################################################################
 # Kateglo Indonesian - Indonesian Dictionary   Data for : bila #
